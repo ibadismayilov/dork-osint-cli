@@ -102,19 +102,27 @@ search "admin panel login" --filetype php --site example.com
 
 # 📂 Project Structure
 
-    terminal-search-system
-    │
-    ├── api.py           # SerpApi integration & caching logic
-    ├── controller.py    # Main logic flow and argument parsing
-    ├── dork.py          # Advanced query builder
-    ├── ui_display.py    # Rich-based UI components
-    ├── pagination.py    # Interactive results navigation
-    ├── history.py       # History logging system
-    ├── export.py        # CSV/JSON export functions
-    │
-    ├── run.sh           # Automated environment handler
-    ├── setup.sh         # Global alias setup script
-    └── .env.example     # Template for environment variables
+    terminal-search-system/
+    ├── core/                # Core Logic
+    │   ├── api.py           # SerpApi integration & caching logic
+    │   ├── dork.py          # Advanced query builder
+    │   └── history.py       # History logging system
+    ├── data/                # Local Data Storage
+    │   ├── exports/         # Exported search results (CSV/JSON)
+    │   ├── cache.json       # Local search cache
+    │   └── history.txt      # Search query logs
+    ├── ui/                  # User Interface
+    │   ├── ui_display.py    # Rich-based table & UI rendering
+    │   └── pagination.py    # Interactive results navigation
+    ├── utils/               # Helper Utilities
+    │   ├── export.py        # Export functions logic
+    │   └── resolver.py      # IP & Domain resolution utilities
+    ├── controller.py        # Main logic flow & argument parsing
+    ├── main.py              # Application entry point
+    ├── run.sh               # Environment & Execution handler
+    ├── setup.sh             # Global command installer (Run once)
+    ├── requirements.txt     # Python dependencies list
+    └── .env.example         # Template for API credentials
 
 ------------------------------------------------------------------------
 
