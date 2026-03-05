@@ -58,14 +58,19 @@ Add your SerpApi key to the `.env` file:
 
 ### 3. Run the Tool
 
-You don't need to manually install requirements. Just run the automated
-script:
+This command installs all dependencies, sets up the virtual environment, 
+and activates the search command globally. You don't need to manually install requirements. 
+Just run the automated script:
 
 ``` bash
-chmod +x run.sh
-./run.sh "your search query"
+chmod +x setup.sh && ./setup.sh"
 ```
+# Usage
+Once installed, you can use the search command from any folder on your system:
 
+``` bash
+search "admin panel login" --filetype php --site example.com
+```
 ------------------------------------------------------------------------
 
 # 🛠 Command Line Arguments
