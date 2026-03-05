@@ -27,7 +27,7 @@ A professional command-line interface (CLI) tool designed for advanced OSINT and
    cd terminal-search-system
 
 2. **Setup Environment Variables:**
-  ```Create a .env file in the root directory (or use the example): 
+    Create a .env file in the root directory (or use the example): 
      - cp .env.example .env
 
   Add your SerpApi key to the .env file:
