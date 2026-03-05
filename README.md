@@ -65,7 +65,7 @@ Just run the automated script:
 ``` bash
 chmod +x setup.sh && ./setup.sh"
 ```
-# Usage
+# 🔍 Usage
 Once installed, you can use the search command from any folder on your system:
 
 ``` bash
