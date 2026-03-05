@@ -5,3 +5,4 @@ exports/
 cache.json
 history.txt
 .env
+tests/

@@ -1,10 +1,10 @@
 from rich.console import Console
 from rich.panel import Panel
-from history import save_history
-from api import search_google
+from core.history import save_history
+from core.api import search_google
 import webbrowser
 import time
-from ui_display import display_results, show_full_snippet
+from ui.ui_display import display_results, show_full_snippet
 
 console = Console()
 
