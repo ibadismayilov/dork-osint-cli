@@ -1,11 +1,11 @@
 # controller.py
 from rich.console import Console
-from dork import build_query
-from api import search_google, CACHE_FILE
-from ui_display import display_results
-from history import show_history
-from export import export_csv, export_json
-from pagination import paginate_results
+from core.dork import build_query
+from core.api import search_google, CACHE_FILE
+from ui.ui_display import display_results
+from core.history import show_history
+from utils.export import export_csv, export_json
+from ui.pagination import paginate_results
 
 console = Console()
 HISTORY_FILE = "history.txt"
