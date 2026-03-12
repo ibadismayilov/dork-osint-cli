@@ -1,11 +1,11 @@
-# export.py
 import os
 import json
 import csv
+from urllib.parse import urlparse
 from rich.console import Console
 
 console = Console()
-EXPORT_DIR = "exports"
+EXPORT_DIR = os.path.join("data", "exports")
 
 def export_json(all_results):
     file_name = input("Please enter file name for JSON (without extension, default: results): ").strip() or "results"
@@ -27,10 +27,12 @@ def export_csv(all_results):
         writer = csv.DictWriter(f, fieldnames=["title", "link", "domain", "snippet"])
         writer.writeheader()
         for r in all_results:
+            link = r.get("link", "")
+            domain = r.get("domain") or urlparse(link).netloc
             writer.writerow({
                 "title": r.get("title", ""),
-                "link": r.get("link", ""),
-                "domain": r.get("domain", ""),
+                "link": link,
+                "domain": domain,
                 "snippet": r.get("snippet", "")
             })
     console.print(f"[green]Results exported to {export_path}[/green]")

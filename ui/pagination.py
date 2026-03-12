@@ -1,14 +1,19 @@
+import webbrowser
+import time
 from rich.console import Console
 from rich.panel import Panel
 from core.history import save_history
 from core.api import search_google
-import webbrowser
-import time
 from ui.ui_display import display_results, show_full_snippet
+# Export functions from your utils folder
+from utils.export import export_json, export_csv
 
 console = Console()
 
 def paginate_results(query, all_results, display_func, page_size, history_file):
+    """
+    Handles pagination, user interaction, and final export options.
+    """
     page = 1
     global_index = 0
     total_results = None
@@ -16,7 +21,7 @@ def paginate_results(query, all_results, display_func, page_size, history_file):
     while True:
         end_index = global_index + page_size
 
-        # API fetch (loading spinner)
+        # API fetch logic with loading spinner
         if end_index > len(all_results) or total_results is None:
             with console.status(f"[cyan]Loading page {page}...[/cyan]", spinner="dots"):
                 retries = 3
@@ -34,7 +39,7 @@ def paginate_results(query, all_results, display_func, page_size, history_file):
                     time.sleep(0.2)
 
             if global_index >= len(all_results):
-                console.print("[yellow]No more results to fetch.[/yellow]")
+                console.print("[yellow]No more results found.[/yellow]")
                 break
 
         current_page_results = all_results[global_index:end_index]
@@ -43,28 +48,30 @@ def paginate_results(query, all_results, display_func, page_size, history_file):
             console.print("[yellow]No results to display.[/yellow]")
             break
 
-        # Panel with total results
-        panel_text = f"[bold green]Page {page}[/bold green] | Showing results {global_index+1}-{global_index+len(current_page_results)}"
+        # Header panel for the current page
+        panel_text = f"[bold green]Page {page}[/bold green] | Results {global_index+1}-{global_index+len(current_page_results)}"
         if total_results != "Unknown":
             panel_text += f" of {total_results}"
         console.print(Panel(panel_text))
 
-        # Display results **only once per page**
+        # Render the table for the current page
         display_func(current_page_results, start_index=global_index)
 
-        # USER ACTION
-        action = input("\n[number] Open link & show full snippet | n Next | p Previous | q Quit : ").strip().lower()
+        # User Actions Menu
+        console.print("\n[bold white]Actions:[/bold white]")
+        console.print("[cyan][ID][/cyan] Open Link & Info | [cyan]n[/cyan] Next | [cyan]p[/cyan] Previous | [cyan]q[/cyan] Quit & Export")
+        
+        action = input("\nChoose an action: ").strip().lower()
 
         if action.isdigit():
             sel = int(action)
             if 0 < sel <= len(all_results):
-                # **Yalnız seçilmiş item üçün toggle**
-                webbrowser.open(all_results[sel - 1].get("link", ""))
-                save_history(history_file, query, all_results[sel - 1].get("link", ""))
-                show_full_snippet(all_results[sel - 1])
-                # **Əvvəlki cədvəl yenidən göstərilmir**
+                target = all_results[sel - 1]
+                webbrowser.open(target.get("link", ""))
+                save_history(history_file, query, target.get("link", ""))
+                show_full_snippet(target)
             else:
-                console.print("[red]Invalid selection[/red]")
+                console.print("[red]Invalid ID. Please choose a number from the table.[/red]")
 
         elif action == "n":
             page += 1
@@ -74,14 +81,33 @@ def paginate_results(query, all_results, display_func, page_size, history_file):
             if page > 1:
                 page -= 1
                 global_index -= page_size
-                if global_index < 0:
-                    global_index = 0
             else:
-                console.print("[yellow]Already at first page[/yellow]")
+                console.print("[yellow]You are already on the first page.[/yellow]")
 
         elif action == "q":
             break
         else:
-            console.print("[red]Unknown action[/red]")
+            console.print("[red]Unknown action. Please try again.[/red]")
+
+    # --- FINAL EXPORT MENU ---
+    if all_results:
+        console.print("\n" + "="*50)
+        console.print("[bold yellow]SEARCH SESSION FINISHED[/bold yellow]")
+        console.print(f"Total results collected: [bold green]{len(all_results)}[/bold green]")
+        console.print("="*50)
+        
+        console.print("\n[bold white]Would you like to export your findings?[/bold white]")
+        console.print("1. Export to [bold cyan]JSON[/bold cyan]")
+        console.print("2. Export to [bold green]CSV[/bold green]")
+        console.print("3. Exit without exporting")
+        
+        export_choice = input("\nSelect an option (1-3): ").strip()
+        
+        if export_choice == "1":
+            export_json(all_results)
+        elif export_choice == "2":
+            export_csv(all_results)
+        else:
+            console.print("[italic white]Exiting... Goodbye![/italic white]")
 
     return all_results
