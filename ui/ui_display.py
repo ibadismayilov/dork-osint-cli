@@ -2,8 +2,8 @@ from urllib.parse import urlparse
 from rich.console import Console
 from rich.table import Table
 from rich.text import Text
-# Importing the separated logic from utils folder
-from utils.resolver import get_ip_address 
+from rich.panel import Panel
+from utils.resolver import get_ip_address, get_whois_info, detect_technology
 
 console = Console()
 
@@ -54,12 +54,36 @@ def display_results(results, start_index=0):
 
 def show_full_snippet(result):
     """
-    Displays the full content and metadata of a single result for detailed inspection.
+    Displays the full result with deep OSINT analysis (Whois & Tech).
     """
-    snippet = result.get("snippet", "")
-    title = result.get("title", "No Title")
     link = result.get("link", "")
-    
-    console.print(f"\n[bold cyan]{title}[/bold cyan]")
-    console.print(f"[blue underline]{link}[/blue underline]")
-    console.print(f"[yellow]{snippet}[/yellow]\n")
+    title = result.get("title", "No Title")
+    snippet = result.get("snippet", "No description available.")
+
+    console.print(Panel(f"[bold cyan]{title}[/bold cyan]\n[blue underline]{link}[/blue underline]", title="Target Details"))
+    console.print(f"[yellow]Snippet:[/yellow] {snippet}\n")
+
+    # --- Deep OSINT Analysis Section ---
+    with console.status("[bold magenta]Performing Deep OSINT Analysis...") as status:
+        whois_data = get_whois_info(link)
+        tech_data = detect_technology(link)
+
+    # 1. Whois Info Table
+    if whois_data:
+        w_table = Table(title="WHOIS Information", show_header=False, border_style="magenta")
+        w_table.add_row("Registrar", str(whois_data['registrar']))
+        w_table.add_row("Created", str(whois_data['creation_date']))
+        w_table.add_row("Expires", str(whois_data['expiration_date']))
+        w_table.add_row("Country", str(whois_data['country']))
+        console.print(w_table)
+
+    # 2. Technology Stack
+    if tech_data:
+        t_table = Table(title="Technology Stack", border_style="green")
+        t_table.add_column("Category", style="bold cyan")
+        t_table.add_column("Detected Tech", style="green")
+        for category, apps in tech_data.items():
+            t_table.add_row(category.capitalize(), ", ".join(apps))
+        console.print(t_table)
+    else:
+        console.print("[red]Could not detect technology stack.[/red]")

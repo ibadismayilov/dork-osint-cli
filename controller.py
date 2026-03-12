@@ -1,4 +1,4 @@
-# controller.py
+import os
 from rich.console import Console
 from core.dork import build_query
 from core.api import search_google, CACHE_FILE
@@ -8,28 +8,40 @@ from utils.export import export_csv, export_json
 from ui.pagination import paginate_results
 
 console = Console()
-HISTORY_FILE = "history.txt"
+DATA_DIR = "data"
+HISTORY_FILE = os.path.join(DATA_DIR, "history.txt")
 
 def parse_comma_list(arg):
+    """
+    Parses a comma-separated string into a list of strings.
+    Example: "admin,login" -> ["admin", "login"]
+    """
     if not arg:
         return None
     return [s.strip() for s in arg.split(",")] if "," in arg else arg
 
 def run_search(args):
-    # ---------------- HISTORY ----------------
+    """
+    Main controller function to manage the search flow and OSINT operations.
+    """
+    
+    # 1. HISTORY: Display search history if requested
     if args.history:
         show_history(HISTORY_FILE)
         return
 
-    # ---------------- CLEAR CACHE ----------------
+    # 2. CLEAR CACHE: Reset the local API cache file
     if args.clear_cache:
-        open(CACHE_FILE, "w").write("{}")
-        console.print("[green]Cache cleared.[/green]")
+        if os.path.exists(CACHE_FILE):
+            with open(CACHE_FILE, "w") as f:
+                f.write("{}")
+            console.print("[bold green]✔ Cache cleared successfully.[/bold green]")
         return
 
-    # ---------------- BUILD QUERY ----------------
+    # 3. BUILD QUERY: Generate the search string based on filters or Recon mode
     query = build_query(
         keyword=args.keyword,
+        subdomain_search=args.subdomain,
         pdf=args.pdf,
         login=args.login,
         site=args.site,
@@ -40,37 +52,29 @@ def run_search(args):
         date_filter=args.date
     )
 
-    # ---------------- FETCH DATA ----------------
-    retries = 3
-    all_results = []
-    while retries > 0:
-        try:
-            data = search_google(query, page=1, page_size=args.page_size)
-            if data and data.get("results"):
-                all_results.extend(data["results"])
-            break
-        except Exception as e:
-            retries -= 1
-            console.print(f"[red]Error fetching results: {e}. Retries left: {retries}[/red]")
+    # Inform the user about the current operation mode
+    if args.subdomain:
+        console.print(f"[bold magenta]🔍 Recon Mode:[/bold magenta] Finding subdomains for [cyan]{args.subdomain}[/cyan]")
+    else:
+        console.print(f"[bold green]🔎 Search Query:[/bold green] [white]{query}[/white]")
 
-    if not all_results:
-        console.print("[red]No results found.[/red]")
-        return
-
-    # ---------------- PAGINATION ----------------
-    all_results = paginate_results(
+    # 4. EXECUTION & PAGINATION:
+    # Handles fetching results, resolving IPs, performing OSINT, and CLI navigation.
+    # The 'paginate_results' function internally calls search_google.
+    final_results = paginate_results(
         query=query,
-        all_results=[],
+        all_results=[], # Start with an empty list for the session
         display_func=display_results,
         page_size=args.page_size,
         history_file=HISTORY_FILE
     )
 
-    # ---------------- EXPORT ----------------
-    if args.export_json:
-        console.print("\n[bold cyan]JSON export requested[/bold cyan]")
-        export_json(all_results)
+    # 5. MANUAL EXPORT (If arguments are explicitly provided):
+    # Though pagination provides an export menu, these flags handle direct commands.
+    if args.export_json and final_results:
+        export_json(final_results)
 
-    if args.export_csv:
-        console.print("\n[bold cyan]CSV export requested[/bold cyan]")
-        export_csv(all_results)
+    if args.export_csv and final_results:
+        export_csv(final_results)
+
+    console.print("\n[bold cyan]Session completed. Happy Hunting![/bold cyan]")
