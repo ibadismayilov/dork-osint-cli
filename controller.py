@@ -12,10 +12,6 @@ DATA_DIR = "data"
 HISTORY_FILE = os.path.join(DATA_DIR, "history.txt")
 
 def parse_comma_list(arg):
-    """
-    Parses a comma-separated string into a list of strings.
-    Example: "admin,login" -> ["admin", "login"]
-    """
     if not arg:
         return None
     return [s.strip() for s in arg.split(",")] if "," in arg else arg
@@ -25,12 +21,12 @@ def run_search(args):
     Main controller function to manage the search flow and OSINT operations.
     """
     
-    # 1. HISTORY: Display search history if requested
+    # 1. HISTORY
     if args.history:
         show_history(HISTORY_FILE)
         return
 
-    # 2. CLEAR CACHE: Reset the local API cache file
+    # 2. CLEAR CACHE
     if args.clear_cache:
         if os.path.exists(CACHE_FILE):
             with open(CACHE_FILE, "w") as f:
@@ -38,10 +34,12 @@ def run_search(args):
             console.print("[bold green]✔ Cache cleared successfully.[/bold green]")
         return
 
-    # 3. BUILD QUERY: Generate the search string based on filters or Recon mode
+    # 3. BUILD QUERY
+    # Fixed: Using args.subdomain_search and adding 'mode'
     query = build_query(
         keyword=args.keyword,
-        subdomain_search=args.subdomain,
+        subdomain_search=args.subdomain_search,
+        mode=getattr(args, 'mode', None),
         pdf=args.pdf,
         login=args.login,
         site=args.site,
@@ -49,28 +47,27 @@ def run_search(args):
         inurl=parse_comma_list(args.inurl),
         intext=parse_comma_list(args.intext),
         filetype=args.filetype,
-        date_filter=args.date
+        date_filter=getattr(args, 'date', None)
     )
 
-    # Inform the user about the current operation mode
-    if args.subdomain:
-        console.print(f"[bold magenta]🔍 Recon Mode:[/bold magenta] Finding subdomains for [cyan]{args.subdomain}[/cyan]")
+    # Inform the user - Fixed the if statement here as well
+    if args.subdomain_search:
+        console.print(f"[bold magenta]🔍 Recon Mode:[/bold magenta] Finding subdomains for [cyan]{args.subdomain_search}[/cyan]")
+    elif getattr(args, 'mode', None):
+        console.print(f"[bold yellow]🤖 Smart Mode ({args.mode}):[/bold yellow] Target: [cyan]{args.site if args.site else 'Global'}[/cyan]")
     else:
         console.print(f"[bold green]🔎 Search Query:[/bold green] [white]{query}[/white]")
 
-    # 4. EXECUTION & PAGINATION:
-    # Handles fetching results, resolving IPs, performing OSINT, and CLI navigation.
-    # The 'paginate_results' function internally calls search_google.
+    # 4. EXECUTION & PAGINATION
     final_results = paginate_results(
         query=query,
-        all_results=[], # Start with an empty list for the session
+        all_results=[], 
         display_func=display_results,
         page_size=args.page_size,
         history_file=HISTORY_FILE
     )
 
-    # 5. MANUAL EXPORT (If arguments are explicitly provided):
-    # Though pagination provides an export menu, these flags handle direct commands.
+    # 5. MANUAL EXPORT
     if args.export_json and final_results:
         export_json(final_results)
 
