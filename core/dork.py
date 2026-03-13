@@ -22,6 +22,12 @@ class DorkManager:
             "vuln": [
                 'inurl:".php?id="', 'inurl:".php?cat="', 
                 'intext:"sql syntax error"', 'inurl:".php?search="'
+            ],
+            "deep_recon": [
+                'inurl:admin', 'inurl:login', 'intitle:"index of"',
+                'inurl:config', 'filetype:php intitle:phpinfo',
+                'inurl:".php?id="', 'inurl:".php?cat="',
+                'intext:"sql syntax error"', 'filetype:env "DB_PASSWORD"'
             ]
         }
 

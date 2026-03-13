@@ -5,12 +5,12 @@ from rich.panel import Panel
 from core.history import save_history
 from core.api import search_google
 from ui.ui_display import display_results, show_full_snippet
-# Export functions from your utils folder
 from utils.export import export_json, export_csv
+from core.reporter import generate_html_report
 
 console = Console()
 
-def paginate_results(query, all_results, display_func, page_size, history_file):
+def paginate_results(query, all_results, display_func, page_size, history_file, args=None):
     """
     Handles pagination, user interaction, and final export options.
     """
@@ -61,7 +61,11 @@ def paginate_results(query, all_results, display_func, page_size, history_file):
         console.print("\n[bold white]Actions:[/bold white]")
         console.print("[cyan][ID][/cyan] Open Link & Info | [cyan]n[/cyan] Next | [cyan]p[/cyan] Previous | [cyan]q[/cyan] Quit & Export")
         
-        action = input("\nChoose an action: ").strip().lower()
+        if args and getattr(args, 'no_interactive', False):
+            action = "q"  # Auto-quit in non-interactive mode
+            console.print("\n[italic cyan]Non-interactive mode: Auto-quitting and exporting...[/italic cyan]")
+        else:
+            action = input("\nChoose an action: ").strip().lower()
 
         if action.isdigit():
             sel = int(action)
@@ -99,14 +103,33 @@ def paginate_results(query, all_results, display_func, page_size, history_file):
         console.print("\n[bold white]Would you like to export your findings?[/bold white]")
         console.print("1. Export to [bold cyan]JSON[/bold cyan]")
         console.print("2. Export to [bold green]CSV[/bold green]")
-        console.print("3. Exit without exporting")
+        console.print("3. Export to [bold magenta]HTML Dashboard[/bold magenta]")
+        console.print("4. Exit without exporting")
         
-        export_choice = input("\nSelect an option (1-3): ").strip()
+        choice = input("\nSelect an option (1-4): ").strip()
         
-        if export_choice == "1":
+        if choice == "1":
             export_json(all_results)
-        elif export_choice == "2":
+        elif choice == "2":
             export_csv(all_results)
+        elif choice == "3":
+            target_name = "Search_Report"
+            if args:
+                target_name = getattr(args, 'site', None) or getattr(args, 'keyword', None) or "Search_Report"
+            
+            with console.status("[bold blue]Generating HTML Dashboard..."):
+                report_file = generate_html_report(all_results, target_name)
+            
+            console.print(f"[bold green]✔ HTML Report created:[/bold green] [underline]{report_file}[/underline]")
+            
+            try:
+                import os
+                report_path = os.path.abspath(report_file)
+                
+                webbrowser.open(f"file://{report_path}")
+                console.print(f"[dim cyan]ℹ Opening dashboard in your browser...[/dim cyan]")
+            except Exception as e:
+                console.print(f"[red]Could not open browser automatically: {e}[/red]")
         else:
             console.print("[italic white]Exiting... Goodbye![/italic white]")
 

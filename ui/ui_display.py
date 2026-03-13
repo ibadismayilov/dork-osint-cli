@@ -37,8 +37,8 @@ def display_results(results, start_index=0):
             link = r.get("link", "")
             domain = urlparse(link).netloc if link else "N/A"
             
-            # Call the separated IP resolution function
-            ip_addr = get_ip_address(link)
+            # Prefer precomputed IP from the search results (cache), otherwise resolve it
+            ip_addr = r.get("ip") or get_ip_address(link)
             
             # Formatting and adding the row to the table
             table.add_row(
