@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recon & OSINT Dashboard</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css" />
+
+  <style>
+    :root {
+      --bg-body: #0a0c10;
+      --bg-card: #161b22;
+      --bg-row: #ffffff;
+      /* Cədvəl sətirləri üçün ağ fon */
+      --accent-neon: #00f2ff;
+      --accent-purple: #7000ff;
+      --text-main: #c9d1d9;
+      --border-color: #30363d;
+    }
+
+    body {
+      background-color: var(--bg-body);
+      font-family: 'Inter', sans-serif;
+      color: var(--text-main);
+      margin: 0;
+      padding-bottom: 50px;
+    }
+
+    .hero {
+      background: radial-gradient(circle at top right, rgba(112, 0, 255, 0.1), transparent),
+        radial-gradient(circle at top left, rgba(0, 242, 255, 0.05), transparent);
+      padding: 50px 0;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 30px;
+    }
+
+    .hero h1 {
+      font-weight: 800;
+      background: linear-gradient(to right, #00f2ff, #7000ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-size: 2.5rem;
+    }
+
+    .card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+    }
+
+    .stat-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 2.2rem;
+      color: var(--accent-neon);
+      font-weight: 700;
+    }
+
+    .table-container {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 25px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    /* DataTable Səliqəyə salınması */
+    table.dataTable thead th {
+      color: #58a6ff !important;
+      text-transform: uppercase;
+      font-size: 13px;
+      letter-spacing: 1.2px;
+      border-bottom: 2px solid var(--border-color) !important;
+      padding: 15px !important;
+    }
+
+    table.dataTable tbody tr {
+      background-color: var(--bg-row) !important;
+      /* Sətirləri ağ etdik */
+      transition: all 0.2s ease;
+    }
+
+    table.dataTable tbody td {
+      padding: 15px !important;
+      vertical-align: middle;
+      border-bottom: 1px solid #eee !important;
+    }
+
+    /* Nömrələr və Title-lar QARA rəngdə */
+    .resource-title {
+      color: #000000 !important;
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .row-index {
+      color: #000000 !important;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: bold;
+    }
+
+    .badge-domain {
+      background: rgba(0, 123, 255, 0.1);
+      color: #0056b3;
+      border: 1px solid rgba(0, 123, 255, 0.2);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+    }
+
+    .ip-code {
+      color: #d97706;
+      /* Daha tünd narıncı (ağ fonda görünsün deyə) */
+      font-family: 'JetBrains Mono', monospace;
+      background: #fffbeb;
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid #fef3c7;
+      display: inline-flex;
+      align-items: center;
+      font-weight: 600;
+    }
+
+    /* SEARCH INPUT: Ağ fon, Qara yazı, 10px 20px padding */
+    .dataTables_filter input {
+      background-color: #ffffff !important;
+      color: #000000 !important;
+      border: 1px solid #ced4da !important;
+      border-radius: 8px !important;
+      padding: 10px 20px !important;
+      font-weight: 600;
+    }
+
+    .btn-action {
+      background: linear-gradient(45deg, #4f46e5, #7c3aed);
+      color: white !important;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-weight: 600;
+      font-size: 0.8rem;
+    }
+
+    .ip-code {
+      color: #d97706;
+      font-family: 'JetBrains Mono', monospace;
+      background: #fffbeb;
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid #fef3c7;
+      display: inline-flex;
+      align-items: center;
+      font-weight: 600;
+    }
+
+    .btn-action {
+      background: linear-gradient(45deg, #4f46e5, #7c3aed);
+      color: white !important;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .fi {
+      width: 1.5em !important;
+      height: 1.1em !important;
+      display: inline-block !important;
+      background-size: contain !important;
+      background-position: center !important;
+      background-repeat: no-repeat !important;
+    }
+  </style>
+</head>
+
+<body>
+
+  <section class="hero text-center">
+    <div class="container">
+      <h1><i class="fas fa-fingerprint me-3"></i>RECON REPORT</h1>
+      <p class="text-secondary mt-2">Target: <span class="text-white fw-bold">{{ target }}</span> | <i
+          class="far fa-calendar-alt ms-2"></i> {{ date }}</p>
+    </div>
+  </section>
+
+  <div class="container">
+    <div class="row g-4 mb-4">
+      <div class="col-md-4">
+        <div class="card p-4 h-100 text-center shadow-sm">
+          <div class="stat-value">{{ total_results }}</div>
+          <div class="text-secondary small text-uppercase tracking-wider">Discovered Assets</div>
+        </div>
+      </div>
+      <div class="col-md-8">
+        <div class="card h-100 p-3">
+          <canvas id="domainChart" style="max-height: 150px;"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <h5 class="mb-4 text-white"><i class="fas fa-list-ul me-2 text-primary"></i>Result Analysis</h5>
+      <table id="resultsTable" class="table">
+        <thead>
+          <tr>
+            <th width="5%">#</th>
+            <th width="40%">Resource Title</th>
+            <th width="20%">Domain</th>
+            <th width="20%">Network IP</th>
+            <th width="15%" class="text-center">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in results %}
+          <tr>
+            <td class="row-index">{{ loop.index }}</td>
+            <td class="resource-title">{{ item.title }}</td>
+            <td><span class="badge-domain">{{ item.domain }}</span></td>
+            <td>
+              <span class="ip-code">
+                {% if item.country_code and item.country_code != 'unknown' and item.country_code != '' %}
+                <span class="fi fi-{{ item.country_code }} me-2"></span>
+                {% else %}
+                <i class="fas fa-globe-americas me-2 text-secondary"></i>
+                {% endif %}
+                {{ item.ip }}
+              </span>
+            </td>
+            <td class="text-center">
+              <a href="{{ item.link }}" target="_blank" class="btn btn-action">
+                Launch <i class="fas fa-external-link-alt ms-1"></i>
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    $(document).ready(function () {
+      $('#resultsTable').DataTable({
+        "pageLength": 10,
+        "dom": '<"d-flex justify-content-between align-items-center mb-3"lf>rtip',
+        "language": {
+          "search": "",
+          "searchPlaceholder": "Filter results..."
+        }
+      });
+
+      const ctx = document.getElementById('domainChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: {{ chart_labels | safe }},
+      datasets: [{
+        label: 'Findings',
+        data: {{ chart_data | safe }},
+      backgroundColor: '#00f2ff',
+      borderRadius: 5
+          }]
+        },
+      options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: '#8b949e' } },
+        y: { grid: { color: '#30363d' }, ticks: { color: '#8b949e' } }
+      }
+    }
+      });
+    });
+  </script>
+</body>
+
+</html>

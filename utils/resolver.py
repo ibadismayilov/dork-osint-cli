@@ -1,7 +1,15 @@
 import socket
-import whois
-import builtwith
 from urllib.parse import urlparse
+
+try:
+    import whois
+except ImportError:
+    whois = None
+
+try:
+    import builtwith
+except ImportError:
+    builtwith = None
 
 def get_ip_address(url):
     try:
@@ -13,6 +21,9 @@ def get_ip_address(url):
 
 def get_whois_info(url):
     """Fetches registration details of the domain."""
+    if whois is None:
+        return None
+
     try:
         domain = urlparse(url).netloc
         w = whois.whois(domain)
@@ -27,9 +38,11 @@ def get_whois_info(url):
 
 def detect_technology(url):
     """Detects technologies used on the target website."""
+    if builtwith is None:
+        return {}
+
     try:
         # We use builtwith to identify CMS, Web Servers, etc.
-        results = builtwith.builtwith(url)
-        return results
+        return builtwith.builtwith(url)
     except Exception:
         return {}
