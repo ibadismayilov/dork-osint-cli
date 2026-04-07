@@ -22,8 +22,10 @@ passive and active scanning capabilities.
     reduce API usage and improve speed.\
 -   **Session History:** Automatically logs your search queries and
     visited links.\
--   **Export Options:** Export your findings directly to `CSV`, `JSON`,
-    or `HTML Dashboard` with automatic timestamps.\
+-   **Export Options:** Export your findings directly to `CSV`, `JSON`, `YAML`, `TXT`, or `HTML Dashboard` with automatic timestamps.\
+-   **Export subfolders:** Exports are organized into dedicated format folders under `data/exports/`.\
+-   **Silent mode:** Suppress export messages with `--silent`.\
+-   **Compressed exports:** Create gzipped JSON/YAML exports with `--compress`.\
 -   **Smart Pagination:** Navigate through hundreds of results with
     ease.\
 -   **Automated Setup:** Includes a `run.sh` script to handle virtual
@@ -103,6 +105,18 @@ search "admin panel login" --filetype php --site example.com
   ``` bash
   search "test query" --export-json --export-csv --export-html
   ```
+- **Export YAML results:**
+  ``` bash
+  search "test query" --export-yaml
+  ```
+- **Export compressed JSON:**
+  ``` bash
+  search "test query" --export-json --compress
+  ```
+- **Export a domain list TXT file:**
+  ``` bash
+  search --subdomain example.com --export-txt
+  ```
 
 ------------------------------------------------------------------------
 
@@ -116,10 +130,10 @@ search "admin panel login" --filetype php --site example.com
   `--site`            Limit results to a specific     `--site github.com`
                       domain                          
 
-  `--subdomain`       Target domain for subdomain     `--subdomain apple.com`
+  `--subdomain`       Target domain for subdomain     `--subdomain example.com`
                       discovery                       
 
-  `--active`          Enable active wordlist          `--subdomain apple.com --active`
+  `--active`          Enable active wordlist          `--subdomain example.com --active`
                       brute-force for subdomains      
 
   `--mode`            Pre-defined dorking mode        `--mode recon --site example.com`
@@ -145,7 +159,15 @@ search "admin panel login" --filetype php --site example.com
 
   `--export-json`     Save results to JSON file       `--export-json`
 
+  `--export-yaml`     Save results to YAML file       `--export-yaml`
+
+  `--export-txt`      Save results to TXT domain list `--export-txt`
+
   `--export-html`     Save results to HTML Dashboard  `--export-html`
+
+  `--compress`        Compress JSON/YAML export      `--compress`
+
+  `--silent`          Suppress export messages       `--silent`
 
   `--export-path`     Custom export directory         `--export-path /path/to/dir`
                       (default: data/exports)         
@@ -174,7 +196,12 @@ search "admin panel login" --filetype php --site example.com
     ├── data/                # Local Data Storage
     │   ├── cache/           # Cached search results
     │   │   └── cache.json   # Local search cache
-    │   ├── exports/         # Exported search results (CSV/JSON/HTML)
+    │   ├── exports/         # Exported search results organized by format
+    │   │   ├── csv/
+    │   │   ├── json/
+    │   │   ├── txt/
+    │   │   ├── yaml/
+    │   │   └── html/
     │   ├── histories/       # Search query logs
     │   │   └── history.txt  # Search history
     │   └── wordlists/       # Wordlists for active scanning
