@@ -1,10 +1,11 @@
 import os
+from pathlib import Path
 from rich.console import Console
 from core.dork import build_query
 from core.api import search_google, CACHE_FILE, run_active_scan
 from ui.ui_display import display_results
 from core.history import show_history, HISTORY_FILE
-from utils.export import export_csv, export_json
+from utils.export import export_csv, export_json, export_txt, export_yaml
 from ui.pagination import paginate_results
 from core.reporter import generate_html_report
 
@@ -88,16 +89,34 @@ def run_search(args):
         # 4) Exports
         if final_results:
             if args.export_json:
-                export_json(final_results, full_path=args.export_path)
+                export_json(final_results, target_name=args.site or args.subdomain_search or args.keyword,
+                            full_path=args.export_path, silent=args.silent, compress=getattr(args, 'compress', False))
 
             if args.export_csv:
-                export_csv(final_results, full_path=args.export_path)
+                export_csv(final_results, target_name=args.site or args.subdomain_search or args.keyword,
+                           full_path=args.export_path, silent=args.silent)
+
+            if args.export_txt:
+                export_txt(final_results, target_name=args.site or args.subdomain_search or args.keyword,
+                           full_path=args.export_path, silent=args.silent)
+
+            if args.export_yaml:
+                export_yaml(final_results, target_name=args.site or args.subdomain_search or args.keyword,
+                            full_path=args.export_path, silent=args.silent, compress=getattr(args, 'compress', False))
 
             if args.export_html:
                 target_name = args.site or args.subdomain_search or args.keyword or "General_Search"
+                html_subdir = Path("data") / "exports" / "html"
                 with console.status("[bold blue]Generating HTML Dashboard..."):
-                    report_file = generate_html_report(final_results, target_name, output_path=args.export_path)
+                    report_file = generate_html_report(final_results, target_name, output_path=str(html_subdir))
                 console.print(f"[bold green]✔ HTML Report generated:[/bold green] [underline]{report_file}[/underline]")
+                try:
+                    import webbrowser
+                    browser_url = Path(report_file).resolve().as_uri()
+                    webbrowser.open(browser_url)
+                    console.print("[dim cyan]ℹ Opening dashboard in your browser...[/dim cyan]")
+                except Exception as e:
+                    console.print(f"[red]Could not open browser automatically: {e}[/red]")
     else:
         console.print("[yellow]⚠ No results found.[/yellow]")
 
