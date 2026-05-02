@@ -14,6 +14,14 @@ passive and active scanning capabilities.
     `site`, and more.\
 -   **Subdomain Discovery:** Passive enumeration via Google Dorks and
     optional active brute-force using wordlists.\
+-   **Extended Active Scanning:** HTTP probing, port scanning, and Certificate Transparency logs for real-world reconnaissance.\
+-   **Full OSINT Suite:**
+    - DNS Records Enumeration (A, AAAA, MX, NS, TXT, SOA, CNAME)
+    - Reverse DNS Lookup & Hostname Resolution
+    - Email Address Enumeration from DNS records
+    - Web Archive (Wayback Machine) Integration
+    - ASN & Geolocation Lookup
+    - Historical Subdomain Discovery from archives
 -   **Smart Dorking Modes:** Pre-defined templates for `recon`, `leaks`,
     `admin`, `vuln`, and `deep_recon`.\
 -   **Interactive UI:** Built with `Rich` for beautiful tables, panels,
@@ -31,7 +39,7 @@ passive and active scanning capabilities.
 -   **Automated Setup:** Includes a `run.sh` script to handle virtual
     environments and dependencies automatically.\
 -   **Robust Dependencies:** Gracefully handles missing optional
-    libraries (e.g., `builtwith`, `whois`).
+    libraries (e.g., `builtwith`, `whois`, `dnspython`).
 
 ------------------------------------------------------------------------
 
@@ -96,6 +104,31 @@ search "admin panel login" --filetype php --site example.com
   search --subdomain example.com --active
   ```
 
+- **Extended Active Scan (HTTP Probe + Port Scan + CT Logs):**
+  ``` bash
+  search --subdomain example.com --extended
+  ```
+
+- **Selective Extended Scanning:**
+  ``` bash
+  search --subdomain example.com --active --http-probe --port-scan --ct-logs
+  ```
+
+- **HTTP Probing Only:**
+  ``` bash
+  search --subdomain example.com --active --http-probe
+  ```
+
+- **Port Scanning Only:**
+  ``` bash
+  search --subdomain example.com --active --port-scan
+  ```
+
+- **Certificate Transparency Lookup Only:**
+  ``` bash
+  search --subdomain example.com --active --ct-logs
+  ```
+
 - **Smart Dorking Mode:**
   ``` bash
   search --mode deep_recon --site example.com
@@ -118,70 +151,153 @@ search "admin panel login" --filetype php --site example.com
   search --subdomain example.com --export-txt
   ```
 
+### 🔬 OSINT & Reconnaissance Examples
+
+- **Full OSINT Reconnaissance:**
+  ``` bash
+  search --subdomain example.com --recon
+  ```
+  Performs comprehensive reconnaissance including DNS enumeration, email discovery, web archive lookup, and ASN analysis.
+
+- **DNS Enumeration (All Records):**
+  ``` bash
+  search --subdomain example.com --dns-enum
+  ```
+  Query all DNS record types: A, AAAA, MX, NS, TXT, SOA, CNAME
+
+- **Custom DNS Records:**
+  ``` bash
+  search --subdomain example.com --dns-records MX,NS,TXT
+  ```
+  Query specific DNS record types (comma-separated)
+
+- **Email Enumeration:**
+  ``` bash
+  search --subdomain example.com --emails
+  ```
+  Generate potential email addresses from domain
+
+- **Web Archive Analysis:**
+  ``` bash
+  search --subdomain example.com --archive
+  ```
+  Find historical snapshots and old subdomains from Wayback Machine
+
+- **ASN & Geolocation Lookup:**
+  ``` bash
+  search --subdomain example.com --asn
+  ```
+  Perform ASN lookup and geolocation analysis on resolved IPs
+
+- **Reverse DNS Lookup:**
+  ``` bash
+  search --reverse-dns 8.8.8.8
+  ```
+  Perform reverse DNS lookup and find hostname from IP address
+
+- **Combined OSINT + Active Scan:**
+  ``` bash
+  search --subdomain example.com --dns-enum --emails --extended --http-probe --port-scan
+  ```
+  Comprehensive recon with DNS enumeration, emails, extended scanning with HTTP probes and port scanning
+
 ------------------------------------------------------------------------
 
 # 🛠 Command Line Arguments
 
-  ----------------------------------------------------------------------------
-  Argument            Description                     Example
-  ------------------- ------------------------------- ------------------------
-  `keyword`           Main search term                `search "admin panel"`
+  ------------------------------------------------------------------------------------------------
+  Argument              Description                                Example
+  ----------------------- ------------------------------- ----------------------------------------
+  `keyword`             Main search term                `search "admin panel"`
 
-  `--site`            Limit results to a specific     `--site github.com`
-                      domain                          
+  `--site`              Limit results to a specific     `--site github.com`
+                        domain                          
 
-  `--subdomain`       Target domain for subdomain     `--subdomain example.com`
-                      discovery                       
+  `--subdomain`         Target domain for subdomain     `--subdomain example.com`
+                        discovery                       
 
-  `--active`          Enable active wordlist          `--subdomain example.com --active`
-                      brute-force for subdomains      
+  `--active`            Enable active wordlist          `--subdomain example.com --active`
+                        brute-force for subdomains      
 
-  `--mode`            Pre-defined dorking mode        `--mode recon --site example.com`
-                      (recon/leaks/admin/vuln/deep_recon)
+  `--extended`          Enable extended active scan     `--subdomain example.com --extended`
+                        (HTTP probe + port scan + CT)   
 
-  `--filetype`        Search for specific file        `--filetype log`
-                      extensions                      
+  `--http-probe`        Enable HTTP/HTTPS probing       `--subdomain example.com --active --http-probe`
+                        on discovered subdomains        
 
-  `--pdf`             Shortcut for `filetype:pdf`     `--pdf`
+  `--port-scan`         Enable port scanning on         `--subdomain example.com --active --port-scan`
+                        discovered subdomains           
 
-  `--login`           Shortcut for `inurl:login`      `--login`
+  `--ct-logs`           Enable Certificate             `--subdomain example.com --active --ct-logs`
+                        Transparency logs lookup        
 
-  `--intitle`         Filter by page title            `--intitle "login"`
+  `--recon`             Full OSINT reconnaissance       `--subdomain example.com --recon`
+                        (DNS, emails, archive, ASN)     
 
-  `--inurl`           Filter by URL content           `--inurl admin`
+  `--dns-enum`          Enumerate all DNS records       `--subdomain example.com --dns-enum`
+                        (A, AAAA, MX, NS, TXT, SOA,CNAME)
 
-  `--intext`          Filter by page text body        `--intext "password"`
+  `--dns-records`       Query specific DNS record       `--subdomain example.com --dns-records MX,NS,TXT`
+                        types (comma-separated)         
 
-  `--date`            Filter by date                  `--date 2023-01-01`
-                      (`after:YYYY-MM-DD`)            
+  `--emails`            Enumerate potential email      `--subdomain example.com --emails`
+                        addresses from domain           
 
-  `--export-csv`      Save results to CSV file        `--export-csv`
+  `--archive`           Query Wayback Machine for       `--subdomain example.com --archive`
+                        historical data and subdomains  
 
-  `--export-json`     Save results to JSON file       `--export-json`
+  `--asn`               Perform ASN and geolocation    `--subdomain example.com --asn`
+                        lookup on resolved IPs          
 
-  `--export-yaml`     Save results to YAML file       `--export-yaml`
+  `--reverse-dns`       Perform reverse DNS lookup     `--reverse-dns 8.8.8.8`
+                        on an IP address                
 
-  `--export-txt`      Save results to TXT domain list `--export-txt`
+  `--mode`              Pre-defined dorking mode        `--mode recon --site example.com`
+                        (recon/leaks/admin/vuln/deep_recon)
 
-  `--export-html`     Save results to HTML Dashboard  `--export-html`
+  `--filetype`          Search for specific file        `--filetype log`
+                        extensions                      
 
-  `--compress`        Compress JSON/YAML export      `--compress`
+  `--pdf`               Shortcut for `filetype:pdf`     `--pdf`
 
-  `--silent`          Suppress export messages       `--silent`
+  `--login`             Shortcut for `inurl:login`      `--login`
 
-  `--export-path`     Custom export directory         `--export-path /path/to/dir`
-                      (default: data/exports)         
+  `--intitle`           Filter by page title            `--intitle "login"`
 
-  `--no-interactive`  Run in non-interactive mode     `--no-interactive`
-                      (auto-export and quit)         
+  `--inurl`             Filter by URL content           `--inurl admin`
 
-  `--clear-cache`     Wipe local search cache         `--clear-cache`
+  `--intext`            Filter by page text body        `--intext "password"`
 
-  `--history`         View search history             `--history`
+  `--date`              Filter by date                  `--date 2023-01-01`
+                        (`after:YYYY-MM-DD`)            
 
-  `--page-size`       Number of results per page      `--page-size 20`
-                      (default: 10)                   
-  ----------------------------------------------------------------------------
+  `--export-csv`        Save results to CSV file        `--export-csv`
+
+  `--export-json`       Save results to JSON file       `--export-json`
+
+  `--export-yaml`       Save results to YAML file       `--export-yaml`
+
+  `--export-txt`        Save results to TXT domain list `--export-txt`
+
+  `--export-html`       Save results to HTML Dashboard  `--export-html`
+
+  `--compress`          Compress JSON/YAML export       `--compress`
+
+  `--silent`            Suppress export messages        `--silent`
+
+  `--export-path`       Custom export directory         `--export-path /path/to/dir`
+                        (default: data/exports)         
+
+  `--no-interactive`    Run in non-interactive mode     `--no-interactive`
+                        (auto-export and quit)         
+
+  `--clear-cache`       Wipe local search cache         `--clear-cache`
+
+  `--history`           View search history             `--history`
+
+  `--page-size`         Number of results per page      `--page-size 20`
+                        (default: 10)                   
+  ------------------------------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
 
@@ -191,6 +307,7 @@ search "admin panel login" --filetype php --site example.com
     ├── core/                # Core Logic
     │   ├── api.py           # SerpApi integration, caching, & active scanning
     │   ├── dork.py          # Advanced query builder & dorking modes
+    │   ├── osint.py         # OSINT module (DNS, reverse DNS, emails, web archive, ASN)
     │   ├── history.py       # History logging system
     │   └── reporter.py      # HTML report generation
     ├── data/                # Local Data Storage
